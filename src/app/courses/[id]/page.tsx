@@ -44,7 +44,7 @@ export default function CourseDetailPage() {
       const res = await fetch('/api/progress');
       const data = await res.json();
       if (data.success) {
-        const isAlreadyEnrolled = data.data.progress?.some((p: any) => p.course._id === params.id);
+        const isAlreadyEnrolled = data.data.progress?.some((p: { course: { _id: string } }) => p.course._id === params.id);
         if (isAlreadyEnrolled) setEnrolled(true);
       }
     } catch { /* ignore */ }

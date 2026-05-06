@@ -1,5 +1,6 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
+
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db';
 
@@ -28,7 +29,7 @@ export async function GET() {
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash('password123', salt);
 
-    const admin = await User.create({
+    await User.create({
       name: 'Admin User', email: 'admin@eduadapt.com', password, role: 'admin'
     });
 
@@ -49,7 +50,7 @@ export async function GET() {
         description: 'Learn to build complete production applications from scratch using Next.js 14, React, and MongoDB.',
         instructor: instructor._id,
         category: 'Web Development',
-        level: 'intermediate',
+        skillLevel: 'intermediate',
         price: 49.99,
         thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800',
         status: 'published',
@@ -62,7 +63,7 @@ export async function GET() {
         description: 'Design beautiful, responsive, and highly animated interfaces that wow users.',
         instructor: instructor._id,
         category: 'Design',
-        level: 'beginner',
+        skillLevel: 'beginner',
         price: 29.99,
         thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=800',
         status: 'published',
@@ -75,7 +76,7 @@ export async function GET() {
         description: 'Master Python fundamentals and dive deep into pandas, numpy, and machine learning.',
         instructor: instructor._id,
         category: 'Data Science',
-        level: 'advanced',
+        skillLevel: 'advanced',
         price: 59.99,
         thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
         status: 'published',
@@ -131,8 +132,9 @@ export async function GET() {
     console.log('Seed complete!');
     return NextResponse.json({ success: true, message: 'Database seeded successfully' });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Seed error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }

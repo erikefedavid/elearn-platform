@@ -57,7 +57,7 @@ export default function CourseCard({
             </div>
           )}
           <div className="absolute top-3 left-3 flex gap-2">
-            <Badge variant={getLevelVariant(skillLevel) as any} className="capitalize">
+            <Badge variant={getLevelVariant(skillLevel) as "default" | "secondary" | "destructive" | "outline"} className="capitalize">
               {skillLevel || 'All Levels'}
             </Badge>
             <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
