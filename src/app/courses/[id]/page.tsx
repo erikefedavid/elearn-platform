@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/layouts/Navbar';
 import { FiBookOpen, FiUsers, FiClock, FiPlay, FiFileText, FiCheckCircle, FiArrowLeft } from 'react-icons/fi';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Lesson { _id: string; title: string; type: string; order: number; duration?: number; quiz?: string; }
 interface CourseDetail {
@@ -68,7 +69,7 @@ export default function CourseDetailPage() {
       if (data.success || data.error?.includes('Already enrolled')) {
         setEnrolled(true);
         setShowCheckout(false);
-        router.push(`/student/learn/${params.id}/${course?.lessons[0]?._id}`);
+        router.push(`/student/learning-path/${params.id}`);
       }
     } catch { /* ignore */ }
     setEnrolling(false);
@@ -115,7 +116,7 @@ export default function CourseDetailPage() {
             {/* Header */}
             <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-primary-600/30 to-accent-500/30">
               {course.thumbnail ? (
-                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                <Image src={course.thumbnail} alt={course.title} fill sizes="(max-width: 1024px) 100vw, 66vw" className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <FiBookOpen className="w-20 h-20 text-primary-400/30" />

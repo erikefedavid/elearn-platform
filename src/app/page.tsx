@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Navbar from '@/components/layouts/Navbar';
 import { BookOpen, Users, BarChart2, Zap, ArrowRight, Play, Shield, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function LandingPage() {
   const features = [
@@ -57,9 +58,11 @@ export default function LandingPage() {
           <div className="mt-20 relative max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-1000 delay-700 fill-mode-both">
             <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl shadow-primary/20 animate-float bg-card">
               <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent pointer-events-none z-10" />
-              <img 
+              <Image 
                 src="/hero-mockup.png" 
                 alt="EduAdapt Platform Dashboard Mockup" 
+                width={1200}
+                height={800}
                 className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity duration-500"
               />
             </div>

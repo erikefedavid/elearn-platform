@@ -24,6 +24,16 @@ export async function GET(request: Request) {
       );
     }
 
+    if (user.status === 'restricted') {
+      const response = NextResponse.json(
+        { success: false, error: 'Your account has been restricted. Please contact the admin.' },
+        { status: 401 }
+      );
+      // Remove cookie to log them out
+      response.cookies.delete('eduadapt_token');
+      return response;
+    }
+
     return NextResponse.json({
       success: true,
       data: user,

@@ -12,6 +12,7 @@ const UserSchema = new Schema<UserDocument>(
     avatar: { type: String, default: '' },
     interests: [{ type: String }],
     skillLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
+    status: { type: String, enum: ['active', 'restricted'], default: 'active' },
   },
   { timestamps: true }
 );

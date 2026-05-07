@@ -28,6 +28,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (user.status === 'restricted') {
+      return NextResponse.json(
+        { success: false, error: 'Your account has been restricted. Please contact the admin.' },
+        { status: 403 }
+      );
+    }
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {

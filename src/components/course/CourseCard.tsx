@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Users, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -40,16 +41,20 @@ export default function CourseCard({
     }
   };
 
+  const href = progress !== undefined ? `/student/learning-path/${_id}` : `/courses/${_id}`;
+
   return (
-    <Link href={`/courses/${_id}`} className="block group h-full">
+    <Link href={href} className="block group h-full">
       <div className="bg-card border border-border/50 rounded-2xl overflow-hidden h-full flex flex-col hover:border-primary/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
         {/* Thumbnail */}
         <div className="relative h-48 bg-muted overflow-hidden">
           {thumbnail ? (
-            <img
+            <Image
               src={thumbnail}
               alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-muted">

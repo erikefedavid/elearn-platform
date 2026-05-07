@@ -31,6 +31,12 @@ export async function POST(request: Request) {
     // Check if email already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
+      if (existingUser.status === 'restricted') {
+        return NextResponse.json(
+          { success: false, error: 'This email is associated with a restricted account.' },
+          { status: 403 }
+        );
+      }
       return NextResponse.json(
         { success: false, error: 'Email already registered' },
         { status: 409 }
