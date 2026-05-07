@@ -6,7 +6,7 @@ import LessonSidebar from '@/components/course/LessonSidebar';
 import VideoPlayer from '@/components/course/VideoPlayer';
 import PDFViewer from '@/components/course/PDFViewer';
 import Link from 'next/link';
-import { FiCheckCircle, FiArrowRight } from 'react-icons/fi';
+import { FiCheckCircle, FiArrowRight, FiDownload } from 'react-icons/fi';
 
 interface Lesson { _id: string; title: string; type: string; contentUrl: string; order: number; duration?: number; quiz?: string; }
 
@@ -93,7 +93,7 @@ export default function CoursePlayerPage() {
                       disabled={isDownloading || downloaded}
                       className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {downloaded ? <span className="text-success-400 flex items-center gap-1"><FiCheckCircle /> Downloaded</span> : isDownloading ? 'Downloading...' : '⬇ Download for Offline'}
+                      {downloaded ? <span className="text-success-400 flex items-center gap-1"><FiCheckCircle /> Downloaded</span> : isDownloading ? 'Downloading...' : <span className="flex items-center gap-1"><FiDownload /> Download for Offline</span>}
                     </button>
                   )}
                 </div>
@@ -140,7 +140,7 @@ export default function CoursePlayerPage() {
                     </Link>
                   )}
                   {completedLessons.includes(currentLesson._id) && (
-                    <span className="badge badge-success text-sm py-2 px-4">✓ Completed</span>
+                    <span className="badge badge-success text-sm py-2 px-4 flex items-center gap-1"><FiCheckCircle className="w-4 h-4" /> Completed</span>
                   )}
                 </div>
               </>

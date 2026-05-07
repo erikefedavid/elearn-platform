@@ -96,6 +96,7 @@ export async function GET() {
       { courseId: nextjsCourse._id, title: 'Introduction to Next.js', type: 'video', contentUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', order: 1, duration: 15 },
       { courseId: nextjsCourse._id, title: 'Routing and Pages', type: 'video', contentUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', order: 2, duration: 25 },
       { courseId: nextjsCourse._id, title: 'Server vs Client Components', type: 'video', contentUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', order: 3, duration: 20 },
+      { courseId: nextjsCourse._id, title: 'Next.js Cheatsheet', type: 'pdf', contentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', order: 4, duration: 10 },
     ]);
 
     const quiz = await Quiz.create({
