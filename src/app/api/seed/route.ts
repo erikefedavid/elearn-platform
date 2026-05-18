@@ -90,36 +90,62 @@ export async function GET() {
 
     // 4. Create Lessons & Quizzes
     console.log('Creating lessons and quizzes...');
-    const nextjsCourse = createdCourses[0];
     
-    const lessons = await Lesson.insertMany([
-      { courseId: nextjsCourse._id, title: 'Introduction to Next.js', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=wm5gMKuwSYk', order: 1, duration: 15 },
-      { courseId: nextjsCourse._id, title: 'Routing and Pages', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=Zv1v1y-yvL8', order: 2, duration: 25 },
-      { courseId: nextjsCourse._id, title: 'Server vs Client Components', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=p1kR-rXy1pE', order: 3, duration: 20 },
-      { courseId: nextjsCourse._id, title: 'Next.js Cheatsheet', type: 'pdf', contentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', order: 4, duration: 10 },
+    // Lessons for Next.js Course
+    const nextjsLessons = await Lesson.insertMany([
+      { courseId: createdCourses[0]._id, title: 'Introduction to Next.js 14', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=wm5gMKuwSYk', order: 1, duration: 15 },
+      { courseId: createdCourses[0]._id, title: 'Routing and Pages', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=Zv1v1y-yvL8', order: 2, duration: 25 },
+      { courseId: createdCourses[0]._id, title: 'Server vs Client Components', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=p1kR-rXy1pE', order: 3, duration: 20 },
+      { courseId: createdCourses[0]._id, title: 'Next.js Cheatsheet', type: 'pdf', contentUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', order: 4, duration: 10 },
+      { courseId: createdCourses[0]._id, title: 'Data Fetching & Caching', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=O1a5dEqQ_kM', order: 5, duration: 30 },
+      { courseId: createdCourses[0]._id, title: 'Deploying Next.js Apps', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=2HBIOnBvQxE', order: 6, duration: 18 },
     ]);
 
-    const quiz = await Quiz.create({
-      lessonId: lessons[0]._id,
+    // Lessons for UI/UX Course
+    const uiuxLessons = await Lesson.insertMany([
+      { courseId: createdCourses[1]._id, title: 'Design Fundamentals', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=kY7wPszhN8c', order: 1, duration: 20 },
+      { courseId: createdCourses[1]._id, title: 'Color Theory & Typography', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=_2LlRvsv3nQ', order: 2, duration: 22 },
+      { courseId: createdCourses[1]._id, title: 'Figma Basics', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=c9Wg6Cb_YlU', order: 3, duration: 40 },
+      { courseId: createdCourses[1]._id, title: 'Creating Wireframes', type: 'text', contentUrl: '', order: 4, duration: 15 },
+      { courseId: createdCourses[1]._id, title: 'Prototyping & Animation', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=1b-3Rk72YpU', order: 5, duration: 35 },
+    ]);
+
+    // Lessons for Python Course
+    const pythonLessons = await Lesson.insertMany([
+      { courseId: createdCourses[2]._id, title: 'Python Basics & Setup', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=kqtD5dpn9C8', order: 1, duration: 25 },
+      { courseId: createdCourses[2]._id, title: 'Data Structures in Python', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=R-HLU9Fl5ug', order: 2, duration: 30 },
+      { courseId: createdCourses[2]._id, title: 'Introduction to Pandas', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=vmEHCJofslg', order: 3, duration: 45 },
+      { courseId: createdCourses[2]._id, title: 'Machine Learning Concepts', type: 'text', contentUrl: '', order: 4, duration: 20 },
+    ]);
+
+    const quiz1 = await Quiz.create({
+      lessonId: nextjsLessons[0]._id,
       questions: [
         { question: 'What is Next.js?', options: ['A React Framework', 'A Database', 'A CSS Library', 'An OS'], correct: 0 },
         { question: 'Which folder contains pages by default in App Router?', options: ['pages', 'app', 'src', 'public'], correct: 1 }
       ]
     });
+    await Lesson.findByIdAndUpdate(nextjsLessons[0]._id, { quiz: quiz1._id });
 
-    await Lesson.findByIdAndUpdate(lessons[0]._id, { quiz: quiz._id });
+    const quiz2 = await Quiz.create({
+      lessonId: uiuxLessons[0]._id,
+      questions: [
+        { question: 'What does UX stand for?', options: ['User Exchange', 'User Experience', 'Utility X', 'Unknown Extent'], correct: 1 },
+      ]
+    });
+    await Lesson.findByIdAndUpdate(uiuxLessons[0]._id, { quiz: quiz2._id });
 
     // 5. Create Enrollments and Progress for Student
     console.log('Creating enrollments...');
-    await Enrollment.create({ student: student._id, course: nextjsCourse._id });
+    await Enrollment.create({ student: student._id, course: createdCourses[0]._id });
     await Enrollment.create({ student: student._id, course: createdCourses[1]._id });
 
     await UserProgress.create({
       student: student._id,
-      course: nextjsCourse._id,
-      completedLessons: [lessons[0]._id],
+      course: createdCourses[0]._id,
+      completedLessons: [nextjsLessons[0]._id],
       streak: 5,
-      completionPercent: 33
+      completionPercent: Math.round((1 / nextjsLessons.length) * 100)
     });
 
     await UserProgress.create({

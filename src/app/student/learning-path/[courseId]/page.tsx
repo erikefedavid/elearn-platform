@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Target, CheckCircle, Lock, Play, FileText, ArrowRight } from 'lucide-react';
+import { Target, CheckCircle, Lock, Play, FileText, ArrowRight, Award, Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface Lesson { _id: string; title: string; type: string; order: number; }
@@ -19,6 +19,7 @@ export default function CourseLearningPathPage() {
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCertificate, setShowCertificate] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -68,6 +69,15 @@ export default function CourseLearningPathPage() {
       <div>
         <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Your Learning Path</h1>
         <p className="text-muted-foreground mt-2 text-lg">Your personalized journey through <span className="text-primary font-bold">{course.title}</span></p>
+        
+        {course.lessons.length > 0 && completedLessons.length < course.lessons.length && (
+          <Link href={`/student/learn/${courseId}/${course.lessons.find(l => !completedLessons.includes(l._id))?._id || course.lessons[0]._id}`}>
+            <button className="mt-6 btn-primary flex items-center gap-2 shadow-lg shadow-primary/30">
+              <Play className="w-4 h-4 fill-current" />
+              {completedLessons.length === 0 ? 'Start Learning' : 'Resume Where You Left Off'}
+            </button>
+          </Link>
+        )}
       </div>
 
       <div className="bg-card p-8 rounded-3xl border border-border shadow-sm relative overflow-hidden">
@@ -80,8 +90,18 @@ export default function CourseLearningPathPage() {
             </div>
             <h2 className="text-2xl font-bold text-foreground">{course.category} Roadmap</h2>
           </div>
-          <div className="text-sm font-bold text-muted-foreground bg-muted/50 px-4 py-2 rounded-full">
-            {completedLessons.length} / {course.lessons.length} Completed
+          <div className="flex items-center gap-4">
+            {completedLessons.length > 0 && completedLessons.length === course.lessons.length && (
+              <button 
+                onClick={() => setShowCertificate(true)}
+                className="flex items-center gap-2 btn-primary py-2 px-4 text-sm shadow-lg shadow-primary/30 animate-pulse-glow"
+              >
+                <Award className="w-4 h-4" /> Get Certificate
+              </button>
+            )}
+            <div className="text-sm font-bold text-muted-foreground bg-muted/50 px-4 py-2 rounded-full">
+              {completedLessons.length} / {course.lessons.length} Completed
+            </div>
           </div>
         </div>
         
@@ -140,6 +160,41 @@ export default function CourseLearningPathPage() {
           </div>
         </div>
       </div>
+
+      {/* Certificate Modal */}
+      {showCertificate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-card border border-border/50 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <Award className="text-primary-500 w-6 h-6" /> Course Certificate
+              </h3>
+              <button onClick={() => setShowCertificate(false)} className="text-muted-foreground hover:text-foreground text-2xl">&times;</button>
+            </div>
+            <div className="p-10 bg-gradient-to-br from-primary-900/40 via-background to-accent-900/40 relative flex flex-col items-center justify-center min-h-[400px] border-[10px] border-double border-primary-500/30 m-6 rounded-xl text-center">
+              <Award className="w-20 h-20 text-primary-400 mb-6 opacity-80" />
+              <h2 className="text-4xl font-serif font-bold text-foreground mb-2">Certificate of Completion</h2>
+              <p className="text-muted-foreground text-lg mb-6">This certifies that you have successfully completed the course</p>
+              <h3 className="text-3xl font-bold text-primary-400 mb-8 max-w-xl">{course.title}</h3>
+              <div className="flex justify-between w-full max-w-md mt-8 pt-8 border-t border-border/50">
+                <div className="text-center">
+                  <div className="text-foreground font-bold font-signature text-xl">EduEarn</div>
+                  <div className="text-xs text-muted-foreground mt-1">Platform</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-foreground font-bold">{new Date().toLocaleDateString()}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Date</div>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-border bg-muted/20 flex justify-end">
+              <button onClick={() => { alert('Certificate download started! (Simulated)'); setShowCertificate(false); }} className="btn-primary flex items-center gap-2">
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

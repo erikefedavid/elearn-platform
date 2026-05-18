@@ -69,7 +69,7 @@ export default function CourseDetailPage() {
       if (data.success || data.error?.includes('Already enrolled')) {
         setEnrolled(true);
         setShowCheckout(false);
-        router.push(`/student/learning-path/${params.id}`);
+        router.push(`/student/my-courses`);
       }
     } catch { /* ignore */ }
     setEnrolling(false);
