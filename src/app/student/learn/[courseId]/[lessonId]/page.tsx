@@ -119,7 +119,7 @@ export default function CoursePlayerPage() {
             {activeTab === 'content' ? (
               <>
                 {/* Content */}
-                {currentLesson.type === 'video' && <VideoPlayer url={currentLesson.contentUrl} title={currentLesson.title} />}
+                {currentLesson.type === 'video' && <VideoPlayer url={currentLesson.contentUrl} title={currentLesson.title} lessonId={currentLesson._id} />}
                 {currentLesson.type === 'pdf' && <PDFViewer url={currentLesson.contentUrl} title={currentLesson.title} />}
                 {currentLesson.type === 'text' && (
                   <div className="glass-card p-8 prose prose-invert max-w-none">

@@ -21,6 +21,7 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
   const [showCheckout, setShowCheckout] = useState(false);
 
@@ -42,11 +43,11 @@ export default function CourseDetailPage() {
 
   async function fetchEnrollmentStatus() {
     try {
-      const res = await fetch('/api/progress');
+      const res = await fetch(`/api/progress?courseId=${params.id}`);
       const data = await res.json();
-      if (data.success) {
-        const isAlreadyEnrolled = data.data.progress?.some((p: { course: { _id: string } }) => p.course._id === params.id);
-        if (isAlreadyEnrolled) setEnrolled(true);
+      if (data.success && data.data) {
+        setEnrolled(true);
+        setCompletedLessons(data.data.completedLessons?.map((l: any) => l._id || l) || []);
       }
     } catch { /* ignore */ }
   }
@@ -188,9 +189,17 @@ export default function CourseDetailPage() {
                 </div>
               </div>
 
-              <button onClick={handleEnroll} disabled={enrolling || enrolled} className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50">
-                {enrolled ? <><FiCheckCircle className="w-5 h-5" /> Enrolled</> : <>Enroll Now</>}
-              </button>
+              {enrolled ? (
+                <Link href={`/student/learn/${course._id}/${course.lessons.find(l => !completedLessons.includes(l._id))?._id || course.lessons[0]?._id || ''}`} className="w-full block">
+                  <button className="btn-primary w-full flex items-center justify-center gap-2">
+                    <FiPlay className="w-5 h-5 fill-current" /> {completedLessons.length === 0 ? 'Start Course' : 'Resume Where You Left Off'}
+                  </button>
+                </Link>
+              ) : (
+                <button onClick={handleEnroll} disabled={enrolling} className="btn-primary w-full flex items-center justify-center gap-2">
+                  Enroll Now
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -20,6 +20,28 @@ export async function POST(request: Request) {
       );
     }
 
+    if (name.trim().length < 2) {
+      return NextResponse.json(
+        { success: false, error: 'Full name must be at least 2 characters long' },
+        { status: 400 }
+      );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { success: false, error: 'Please provide a valid email address' },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { success: false, error: 'Password must be at least 6 characters long' },
+        { status: 400 }
+      );
+    }
+
     // Validate role — admin cannot self-register
     if (!['student', 'instructor'].includes(role)) {
       return NextResponse.json(
