@@ -18,6 +18,7 @@ export default function CourseLearningPathPage() {
   
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [remedialLessons, setRemedialLessons] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCertificate, setShowCertificate] = useState(false);
 
@@ -37,6 +38,7 @@ export default function CourseLearningPathPage() {
         }
         if (progressData.success && progressData.data) {
           setCompletedLessons(progressData.data.completedLessons?.map((l: any) => l._id || l) || []);
+          setRemedialLessons(progressData.data.remedialLessons?.map((l: any) => l._id || l) || []);
         }
       } catch (err) {
         console.error(err);
@@ -112,13 +114,16 @@ export default function CourseLearningPathPage() {
           <div className="space-y-6">
             {course.lessons.map((lesson, i) => {
               const isCompleted = completedLessons.includes(lesson._id);
+              const isRemedial = remedialLessons.includes(lesson._id);
               const isNextOrFirst = !isCompleted && (i === 0 || completedLessons.includes(course.lessons[i - 1]?._id));
+              // A lesson is locked if it's not completed, not the next one, OR if it's the next one but the user is stuck in a remedial state for this exact lesson. Wait, if they are stuck in remedial, it's NOT locked, they have to click it to view the remedial content. 
               const isLocked = !isCompleted && !isNextOrFirst;
 
               return (
                 <div key={lesson._id} className="flex items-center gap-6 relative group">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 flex-shrink-0 transition-all duration-300 ${
                     isCompleted ? 'bg-success-500 text-white shadow-lg shadow-success-500/30' : 
+                    isRemedial ? 'bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30 scale-110 animate-pulse' :
                     isNextOrFirst ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-110' : 
                     'bg-muted border border-border text-muted-foreground'
                   }`}>
@@ -128,16 +133,18 @@ export default function CourseLearningPathPage() {
                   </div>
                   
                   <div className={`flex-1 p-4 rounded-xl transition-all duration-300 ${
+                    isRemedial ? 'bg-destructive/10 border border-destructive/30 shadow-sm shadow-destructive/10 scale-[1.02]' :
                     isNextOrFirst ? 'bg-primary/10 border border-primary/30 shadow-sm shadow-primary/5 scale-[1.02]' : 
                     isCompleted ? 'bg-success-500/5 border border-success-500/20' :
                     'bg-muted/30 border border-transparent hover:border-border'
                   }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className={`text-lg font-bold ${isNextOrFirst ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        <span className={`text-lg font-bold ${isRemedial ? 'text-destructive' : isNextOrFirst ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground'}`}>
                           Step {i + 1}: {lesson.title}
                         </span>
                         <span className="badge badge-info text-xs capitalize">{lesson.type}</span>
+                        {isRemedial && <span className="badge bg-destructive text-destructive-foreground text-xs uppercase animate-pulse">Remedial Required</span>}
                       </div>
                       
                       {isLocked ? (
@@ -145,10 +152,11 @@ export default function CourseLearningPathPage() {
                       ) : (
                         <Link href={`/student/learn/${courseId}/${lesson._id}`}>
                           <button className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                            isRemedial ? 'bg-destructive text-destructive-foreground hover:scale-105 shadow-md shadow-destructive/20' :
                             isNextOrFirst ? 'bg-primary text-primary-foreground hover:scale-105 shadow-md shadow-primary/20' : 
                             'bg-muted text-foreground hover:bg-muted-foreground/20'
                           }`}>
-                            {isCompleted ? 'Review Lesson' : 'Start Lesson'} <ArrowRight className="w-4 h-4" />
+                            {isCompleted ? 'Review Lesson' : isRemedial ? 'Start Remedial' : 'Start Lesson'} <ArrowRight className="w-4 h-4" />
                           </button>
                         </Link>
                       )}

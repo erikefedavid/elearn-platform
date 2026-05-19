@@ -44,6 +44,13 @@ export async function GET(request: Request) {
     const engagementRate = calcEngagementRate(activeStudentIds.length, totalStudents);
     const completionRate = calcCompletionRate(completedEnrollments.length, enrollments.length);
 
+    // Calculate Average Time on Task
+    const allProgress = await UserProgress.find({ course: { $in: courseIds } });
+    const totalTimeSpentSeconds = allProgress.reduce((sum, p) => sum + (p.timeSpentSeconds || 0), 0);
+    const avgTimeOnTaskMins = totalTimeSpentSeconds > 0 && allProgress.length > 0 
+      ? Math.round((totalTimeSpentSeconds / allProgress.length) / 60)
+      : 0;
+
     // Average quiz score
     const quizAttempts = await QuizAttempt.find({ course: { $in: courseIds } });
     const avgQuizScore = calcAvgQuizScore(quizAttempts.map((a) => a.score));
@@ -99,6 +106,16 @@ export async function GET(request: Request) {
       };
     });
 
+    // Calculate Dropout Risk Score
+    // Simplified algorithm: (inactive students + at-risk students) / total students * 100
+    const uniqueAtRiskOrInactive = new Set([
+      ...inactiveProgress.map(p => p.student.toString()),
+      ...atRiskAttempts.map(a => a.student.toString())
+    ]);
+    const dropoutRiskScore = totalStudents > 0 
+      ? Math.round((uniqueAtRiskOrInactive.size / totalStudents) * 100) 
+      : 0;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -107,6 +124,8 @@ export async function GET(request: Request) {
         engagementRate,
         completionRate,
         avgQuizScore,
+        avgTimeOnTaskMins,
+        dropoutRiskScore,
         atRiskStudents,
         courseMetrics,
         inactiveStudents,

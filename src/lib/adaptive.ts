@@ -11,37 +11,28 @@ export function runAdaptiveEngine(
   score: number,
   attemptNumber: number
 ): AdaptiveResult {
-  // Student has failed this quiz twice or more — flag as at-risk
-  if (score < 50 && attemptNumber >= 2) {
+  // Score < 50 triggers remedial content
+  if (score < 50) {
     return {
-      status: 'at-risk',
-      message: "You've struggled with this topic twice. Your instructor has been notified.",
+      status: attemptNumber >= 2 ? 'at-risk' : 'needs-review',
+      message: "Score below 50%. You must complete the remedial material before advancing.",
       nextAction: 'review-material',
     };
   }
 
-  // First failure — encourage retry
-  if (score < 50) {
-    return {
-      status: 'needs-review',
-      message: 'Not quite there yet. Review the lesson material and try again.',
-      nextAction: 'retry',
-    };
-  }
-
-  // Passed but needs reinforcement
-  if (score >= 50 && score < 75) {
+  // Score 50 - 69 retains with supplementary hints but allows progression
+  if (score >= 50 && score < 70) {
     return {
       status: 'reinforce',
-      message: 'Good effort! You can proceed but consider reviewing this topic later.',
+      message: 'Good effort, but there is room for improvement. Here is a supplementary hint: Review the core concepts again.',
       nextAction: 'next-lesson',
     };
   }
 
-  // Mastered the topic
+  // Score >= 70 advances the learner directly
   return {
     status: 'advance',
-    message: 'Excellent! You\'ve mastered this topic. Moving to the next lesson.',
+    message: 'Excellent! You scored above 70%. Moving to the next module.',
     nextAction: 'next-lesson',
   };
 }

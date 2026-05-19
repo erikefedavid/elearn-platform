@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Bell, LogOut, User, BookOpen } from 'lucide-react';
+import { Menu, X, Bell, LogOut, User, BookOpen, Wifi, WifiOff } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 
@@ -20,12 +20,24 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     fetchUser();
     fetchNotifications();
+
+    // Network status listener
+    setIsOnline(navigator.onLine);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   async function fetchUser() {
@@ -105,6 +117,11 @@ export default function Navbar() {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
+            {!isOnline && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 text-destructive rounded-full text-xs font-semibold">
+                <WifiOff className="w-3.5 h-3.5" /> Offline Mode
+              </div>
+            )}
             <ThemeToggle />
             
             {user ? (

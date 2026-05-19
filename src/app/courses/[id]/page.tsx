@@ -6,12 +6,13 @@ import Navbar from '@/components/layouts/Navbar';
 import { FiBookOpen, FiUsers, FiClock, FiPlay, FiFileText, FiCheckCircle, FiArrowLeft } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePaystackPayment } from 'react-paystack';
 
 interface Lesson { _id: string; title: string; type: string; order: number; duration?: number; quiz?: string; }
 interface CourseDetail {
   _id: string; title: string; description: string; category: string; skillLevel: string;
   thumbnail?: string; instructor: { _id: string; name: string; email: string };
-  enrolledCount: number; lessons: Lesson[]; status: string;
+  enrolledCount: number; lessons: Lesson[]; status: string; price?: number;
 }
 
 export default function CourseDetailPage() {
@@ -22,15 +23,23 @@ export default function CourseDetailPage() {
   const [enrolling, setEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     if (params.id) {
       fetchCourse();
       fetchEnrollmentStatus();
+      fetchUser();
     }
   }, [params.id]);
+
+  async function fetchUser() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.success) setUserEmail(data.data.email);
+    } catch { /* ignore */ }
+  }
 
   async function fetchCourse() {
     try {
@@ -52,14 +61,32 @@ export default function CourseDetailPage() {
     } catch { /* ignore */ }
   }
 
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: userEmail || 'student@eduadapt.com',
+    amount: (course?.price || 15000) * 100, // Amount is in kobo
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder',
+  };
+
+  const initializePayment = usePaystackPayment(config);
+
   function handleEnroll() {
-    // Show mock checkout instead of enrolling immediately
-    setShowCheckout(true);
+    if (!userEmail) {
+      router.push('/login');
+      return;
+    }
+    setEnrolling(true);
+    initializePayment({
+      onSuccess: () => {
+        processPayment();
+      },
+      onClose: () => {
+        setEnrolling(false);
+      }
+    });
   }
 
-  async function processPayment(e: React.FormEvent) {
-    e.preventDefault();
-    setEnrolling(true);
+  async function processPayment() {
     try {
       const res = await fetch('/api/enroll', {
         method: 'POST',
@@ -69,7 +96,6 @@ export default function CourseDetailPage() {
       const data = await res.json();
       if (data.success || data.error?.includes('Already enrolled')) {
         setEnrolled(true);
-        setShowCheckout(false);
         router.push(`/student/my-courses`);
       }
     } catch { /* ignore */ }
@@ -205,38 +231,6 @@ export default function CourseDetailPage() {
         </div>
       </div>
 
-      {/* Mock Checkout Modal */}
-      {showCheckout && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border border-border/50 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-border">
-              <h3 className="text-xl font-bold text-foreground flex justify-between items-center">
-                Checkout (Simulated)
-                <button onClick={() => setShowCheckout(false)} className="text-muted-foreground hover:text-foreground">&times;</button>
-              </h3>
-            </div>
-            <form onSubmit={processPayment} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm text-muted-foreground mb-1">Card Number</label>
-                <input type="text" placeholder="0000 0000 0000 0000" className="w-full bg-muted/50 border border-border rounded-lg px-4 py-2 text-white outline-none focus:border-primary-500 transition-colors" required defaultValue="4242 4242 4242 4242" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Expiry</label>
-                  <input type="text" placeholder="MM/YY" className="w-full bg-muted/50 border border-border rounded-lg px-4 py-2 text-white outline-none focus:border-primary-500 transition-colors" required defaultValue="12/26" />
-                </div>
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1">CVC</label>
-                  <input type="text" placeholder="123" className="w-full bg-muted/50 border border-border rounded-lg px-4 py-2 text-white outline-none focus:border-primary-500 transition-colors" required defaultValue="123" />
-                </div>
-              </div>
-              <button type="submit" disabled={enrolling} className="w-full btn-primary mt-6 flex justify-center items-center gap-2">
-                {enrolling ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : `Pay & Enroll`}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

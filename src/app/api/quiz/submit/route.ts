@@ -71,20 +71,28 @@ export async function POST(request: Request) {
       isAtRisk: adaptiveResult.status === 'at-risk',
     });
 
-    // Update progress if passed (score >= 50)
-    if (score >= 50) {
-      const lesson = await Lesson.findById(lessonId);
-      const totalLessons = await Lesson.countDocuments({ courseId });
-      
-      const progress = await UserProgress.findOneAndUpdate(
-        { student: payload.userId, course: courseId },
-        {
-          $addToSet: { completedLessons: lessonId },
-          lastActiveDate: new Date(),
-        },
-        { new: true, upsert: true }
-      );
+    // Update progress
+    const lesson = await Lesson.findById(lessonId);
+    const totalLessons = await Lesson.countDocuments({ courseId });
 
+    const updateQuery: any = {
+      $set: { lastActiveDate: new Date() }
+    };
+
+    if (score >= 50) {
+      updateQuery.$addToSet = { completedLessons: lessonId };
+      updateQuery.$pull = { remedialLessons: lessonId };
+    } else {
+      updateQuery.$addToSet = { remedialLessons: lessonId };
+    }
+
+    const progress = await UserProgress.findOneAndUpdate(
+      { student: payload.userId, course: courseId },
+      updateQuery,
+      { new: true, upsert: true }
+    );
+
+    if (score >= 50) {
       // Recalculate completion percent
       const completionPercent = Math.round(
         (progress.completedLessons.length / totalLessons) * 100

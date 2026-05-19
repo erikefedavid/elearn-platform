@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "EduAdapt — Adaptive E-Learning Platform",
   description: "A web-based adaptive e-learning platform with personalized content recommendations, learning analytics, and progress tracking for students, instructors, and admins.",
   keywords: ["e-learning", "education", "courses", "adaptive learning", "online learning"],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
