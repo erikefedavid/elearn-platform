@@ -29,9 +29,11 @@ const nextConfig = {
   },
 };
 
+const disablePWA = process.env.NODE_ENV === 'development' || process.cwd().includes("'");
+
 const withPWA = createPWA({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: disablePWA,
   register: true,
   skipWaiting: true,
 });

@@ -21,6 +21,7 @@ export default function CoursePlayerPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, lessonId]);
 
   async function loadData() {
@@ -46,9 +47,25 @@ export default function CoursePlayerPage() {
   }
 
   async function markComplete() {
-    // Progress is updated when quiz is submitted. This is a manual completion for lessons without quizzes.
-    if (!currentLesson?.quiz) {
-      setCompletedLessons((prev) => [...prev, currentLesson!._id]);
+    if (!currentLesson) return;
+    try {
+      const res = await fetch('/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId,
+          lessonId: currentLesson._id,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCompletedLessons((prev) => {
+          if (prev.includes(currentLesson._id)) return prev;
+          return [...prev, currentLesson._id];
+        });
+      }
+    } catch (err) {
+      console.error('Failed to mark lesson complete:', err);
     }
   }
 
@@ -119,7 +136,14 @@ export default function CoursePlayerPage() {
             {activeTab === 'content' ? (
               <>
                 {/* Content */}
-                {currentLesson.type === 'video' && <VideoPlayer url={currentLesson.contentUrl} title={currentLesson.title} lessonId={currentLesson._id} />}
+                {currentLesson.type === 'video' && (
+                  <VideoPlayer 
+                    url={currentLesson.contentUrl} 
+                    title={currentLesson.title} 
+                    lessonId={currentLesson._id} 
+                    onComplete={markComplete}
+                  />
+                )}
                 {currentLesson.type === 'pdf' && <PDFViewer url={currentLesson.contentUrl} title={currentLesson.title} />}
                 {currentLesson.type === 'text' && (
                   <div className="glass-card p-8 prose prose-invert max-w-none">

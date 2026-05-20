@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -10,12 +11,13 @@ interface VideoPlayerProps {
   url: string;
   title?: string;
   lessonId?: string;
+  onComplete?: () => void;
 }
 
-export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) {
+export default function VideoPlayer({ url, lessonId, onComplete }: VideoPlayerProps) {
   const [mounted, setMounted] = useState(false);
   const playerRef = useRef<any>(null);
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -29,8 +31,105 @@ export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) 
   };
 
   const youtubeId = getYouTubeId(url);
+  const containerId = `yt-player-${lessonId || 'youtube'}`;
 
-  const handleProgress = (state: { playedSeconds: number }) => {
+  // YouTube Iframe Player API integration for progress tracking, resumption, and completion
+  useEffect(() => {
+    if (!youtubeId || !mounted) return;
+
+    let player: any;
+    let progressInterval: NodeJS.Timeout;
+
+    const initPlayer = () => {
+      const YT = (window as any).YT;
+      if (!YT || !YT.Player) return;
+
+      player = new YT.Player(containerId, {
+        videoId: youtubeId,
+        height: '100%',
+        width: '100%',
+        playerVars: {
+          autoplay: 0,
+          rel: 0,
+          showinfo: 0,
+          controls: 1,
+        },
+        events: {
+          onReady: (event: any) => {
+            playerRef.current = event.target;
+            if (lessonId) {
+              const savedProgress = localStorage.getItem(`video-progress-${lessonId}`);
+              if (savedProgress) {
+                event.target.seekTo(parseFloat(savedProgress), true);
+              }
+            }
+          },
+          onStateChange: (event: any) => {
+            const YTState = (window as any).YT.PlayerState;
+            if (event.data === YTState.PLAYING) {
+              progressInterval = setInterval(() => {
+                if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+                  const currentTime = playerRef.current.getCurrentTime();
+                  if (currentTime > 0 && lessonId) {
+                    localStorage.setItem(`video-progress-${lessonId}`, currentTime.toString());
+                  }
+                }
+              }, 2000);
+            } else {
+              clearInterval(progressInterval);
+            }
+
+            if (event.data === YTState.ENDED) {
+              if (onComplete) {
+                onComplete();
+              }
+            }
+          },
+        },
+      });
+    };
+
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+      const previousCallback = (window as any).onYouTubeIframeAPIReady;
+      (window as any).onYouTubeIframeAPIReady = () => {
+        if (previousCallback) previousCallback();
+        initPlayer();
+      };
+    } else if (!(window as any).YT.Player) {
+      const previousCallback = (window as any).onYouTubeIframeAPIReady;
+      (window as any).onYouTubeIframeAPIReady = () => {
+        if (previousCallback) previousCallback();
+        initPlayer();
+      };
+    } else {
+      initPlayer();
+    }
+
+    return () => {
+      clearInterval(progressInterval);
+      if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+        try {
+          const currentTime = playerRef.current.getCurrentTime();
+          if (currentTime > 0 && lessonId) {
+            localStorage.setItem(`video-progress-${lessonId}`, currentTime.toString());
+          }
+        } catch {
+          // ignore any player reference errors during unmount
+        }
+      }
+      if (player && typeof player.destroy === 'function') {
+        player.destroy();
+      }
+    };
+  }, [youtubeId, lessonId, containerId, mounted, onComplete]);
+
+  // Fallback handlers for generic ReactPlayer URLs
+  const handleProgress = (state: any) => {
     if (lessonId && state.playedSeconds > 0) {
       localStorage.setItem(`video-progress-${lessonId}`, state.playedSeconds.toString());
     }
@@ -53,23 +152,14 @@ export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) 
     );
   }
 
-  // If it's a YouTube URL, use the native YouTube Embed (100% reliable, fast, bypasses bundler SSR/lazy registry bugs)
   if (youtubeId) {
     return (
       <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-border/50 shadow-lg">
-        <iframe
-          className="w-full h-full"
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&showinfo=0&controls=1`}
-          title={title || "Video Player"}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <div id={containerId} className="w-full h-full" />
       </div>
     );
   }
 
-  // Fallback for other video urls (raw file paths, Vimeo, etc.)
   return (
     <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border/50 shadow-lg">
       <ReactPlayer
@@ -80,7 +170,8 @@ export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) 
         controls
         onProgress={handleProgress}
         onReady={handleReady}
-        progressInterval={2000} // Save every 2 seconds
+        onEnded={onComplete}
+        progressInterval={2000}
       />
     </div>
   );
