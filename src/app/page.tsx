@@ -69,21 +69,6 @@ export default function LandingPage() {
             {/* Glowing Reflection underneath */}
             <div className="absolute -bottom-10 left-10 right-10 h-20 bg-primary/30 blur-[60px] -z-10 rounded-full" />
           </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-32 max-w-4xl mx-auto animate-in fade-in duration-1000 delay-1000 fill-mode-both">
-            {[
-              { label: 'Active Students', value: '2,500+' },
-              { label: 'Courses', value: '150+' },
-              { label: 'Instructors', value: '50+' },
-              { label: 'Completion Rate', value: '89%' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center p-6 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground">{stat.value}</p>
-                <p className="text-sm text-muted-foreground mt-2 font-medium">{stat.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

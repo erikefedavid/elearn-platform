@@ -167,30 +167,98 @@ export default function CourseDetailPage() {
                 Course Content ({course.lessons.length} lessons)
               </h2>
               <div className="space-y-2">
-                {course.lessons.map((lesson, i) => (
-                  <div key={lesson._id} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted/50 transition-colors">
-                    <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center text-primary-400 text-sm font-bold">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-foreground font-medium">{lesson.title}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground/80 mt-1">
-                        {lesson.type === 'video' && <span className="flex items-center gap-1"><FiPlay className="w-3 h-3" /> Video</span>}
-                        {lesson.type === 'pdf' && <span className="flex items-center gap-1"><FiFileText className="w-3 h-3" /> PDF</span>}
-                        {lesson.type === 'text' && <span className="flex items-center gap-1"><FiFileText className="w-3 h-3" /> Text</span>}
-                        {lesson.duration && <span className="flex items-center gap-1"><FiClock className="w-3 h-3" /> {lesson.duration} min</span>}
+                {course.lessons.map((lesson, i) => {
+                  const isCompleted = completedLessons.includes(lesson._id);
+                  const nextUncompleted = course.lessons.find(l => !completedLessons.includes(l._id));
+                  const isNextUp = enrolled && nextUncompleted && lesson._id === nextUncompleted._id;
+
+                  const cardContent = (
+                    <div 
+                      onClick={(e) => {
+                        if (!enrolled) {
+                          e.preventDefault();
+                          const enrollCard = document.getElementById('enroll-card');
+                          if (enrollCard) {
+                            enrollCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            enrollCard.classList.add('ring-4', 'ring-primary-500/50', 'scale-[1.02]');
+                            setTimeout(() => {
+                              enrollCard.classList.remove('ring-4', 'ring-primary-500/50', 'scale-[1.02]');
+                            }, 1500);
+                          }
+                        }
+                      }}
+                      className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 ${
+                        enrolled
+                          ? 'bg-muted/30 hover:bg-primary-500/5 border border-transparent cursor-pointer hover:translate-x-1 hover:shadow-sm'
+                          : 'bg-muted/50 hover:bg-muted/70 cursor-pointer'
+                      } ${isNextUp ? 'border-primary-500/40 bg-primary-500/5 shadow-sm' : ''} ${
+                        isCompleted ? 'border-emerald-500/20 bg-emerald-500/5' : ''
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                        isCompleted
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : isNextUp
+                          ? 'bg-primary-500 text-white animate-pulse'
+                          : 'bg-primary-500/20 text-primary-400'
+                      }`}>
+                        {isCompleted ? <FiCheckCircle className="w-5 h-5" /> : i + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-medium transition-colors ${
+                            isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'
+                          } ${isNextUp ? 'text-primary-400 font-semibold' : ''}`}>
+                            {lesson.title}
+                          </p>
+                          {isNextUp && (
+                            <span className="badge bg-primary-500 text-white text-[10px] uppercase font-extrabold py-0.5 px-2 rounded animate-pulse">
+                              Next Up
+                            </span>
+                          )}
+                          {isCompleted && (
+                            <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 py-0.5 px-2 rounded">
+                              Completed
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground/80 mt-1">
+                          {lesson.type === 'video' && <span className="flex items-center gap-1"><FiPlay className="w-3 h-3" /> Video</span>}
+                          {lesson.type === 'pdf' && <span className="flex items-center gap-1"><FiFileText className="w-3 h-3" /> PDF</span>}
+                          {lesson.type === 'text' && <span className="flex items-center gap-1"><FiFileText className="w-3 h-3" /> Text</span>}
+                          {lesson.duration && <span className="flex items-center gap-1"><FiClock className="w-3 h-3" /> {lesson.duration} min</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {lesson.quiz && <span className="badge badge-info text-xs">Quiz</span>}
+                        {enrolled && (
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center bg-primary-500/10 text-primary transition-all ${
+                            isNextUp ? 'opacity-100 scale-110' : 'opacity-0 hover:opacity-100'
+                          }`}>
+                            <FiPlay className="w-3 h-3 fill-current" />
+                          </div>
+                        )}
                       </div>
                     </div>
-                    {lesson.quiz && <span className="badge badge-info text-xs">Quiz</span>}
-                  </div>
-                ))}
+                  );
+
+                  return enrolled ? (
+                    <Link key={lesson._id} href={`/student/learn/${course._id}/${lesson._id}`} className="block group/lesson">
+                      {cardContent}
+                    </Link>
+                  ) : (
+                    <div key={lesson._id}>
+                      {cardContent}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <div className="glass-card p-6 sticky top-24">
+            <div id="enroll-card" className="glass-card p-6 sticky top-24 transition-all duration-300">
               <div className="space-y-4 mb-6">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Instructor</span>
@@ -222,7 +290,7 @@ export default function CourseDetailPage() {
                   </button>
                 </Link>
               ) : (
-                <button onClick={handleEnroll} disabled={enrolling} className="btn-primary w-full flex items-center justify-center gap-2">
+                <button onClick={handleEnroll} disabled={enrolling} className="btn-primary w-full flex items-center justify-center gap-2 animate-pulse-glow">
                   Enroll Now
                 </button>
               )}
