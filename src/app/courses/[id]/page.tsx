@@ -76,6 +76,18 @@ export default function CourseDetailPage() {
       return;
     }
     setEnrolling(true);
+
+    // If the key is a placeholder or mock key, bypass Paystack for smooth development/demo
+    const isMockKey = 
+      !process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 
+      process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY.includes('placeholder') || 
+      process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY.includes('1234567890abcdef');
+
+    if (isMockKey) {
+      processPayment();
+      return;
+    }
+
     initializePayment({
       onSuccess: () => {
         processPayment();
