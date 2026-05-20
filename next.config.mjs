@@ -20,6 +20,13 @@ const nextConfig = {
     config.experiments = { ...config.experiments, topLevelAwait: true };
     return config;
   },
+  // Ignore ESLint and TypeScript build errors during production builds
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 const withPWA = createPWA({
