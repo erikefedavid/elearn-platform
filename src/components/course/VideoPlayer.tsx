@@ -20,6 +20,16 @@ export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) 
     setMounted(true);
   }, []);
 
+  // Helper to check if URL is a YouTube video and extract the ID
+  const getYouTubeId = (videoUrl: string) => {
+    if (!videoUrl) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = videoUrl.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const youtubeId = getYouTubeId(url);
+
   const handleProgress = (state: { playedSeconds: number }) => {
     if (lessonId && state.playedSeconds > 0) {
       localStorage.setItem(`video-progress-${lessonId}`, state.playedSeconds.toString());
@@ -43,6 +53,23 @@ export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) 
     );
   }
 
+  // If it's a YouTube URL, use the native YouTube Embed (100% reliable, fast, bypasses bundler SSR/lazy registry bugs)
+  if (youtubeId) {
+    return (
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-border/50 shadow-lg">
+        <iframe
+          className="w-full h-full"
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&showinfo=0&controls=1`}
+          title={title || "Video Player"}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  // Fallback for other video urls (raw file paths, Vimeo, etc.)
   return (
     <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border/50 shadow-lg">
       <ReactPlayer
@@ -54,11 +81,6 @@ export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) 
         onProgress={handleProgress}
         onReady={handleReady}
         progressInterval={2000} // Save every 2 seconds
-        config={{
-          youtube: {
-            playerVars: { showinfo: 1 }
-          }
-        }}
       />
     </div>
   );
