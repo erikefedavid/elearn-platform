@@ -38,7 +38,7 @@ export default function LandingPage() {
               Learn Smarter with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-400">EduAdapt</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 duration-700 fade-in delay-300 fill-mode-both">
-              An intelligent e-learning platform that adapts to your pace, personalizes your path, and tracks your progress — all in one clean interface.
+              An intelligent e-learning platform that adapts to your pace, personalizes your learning path, and tracks your progress — all in one clean interface.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in slide-in-from-bottom-10 duration-700 fade-in delay-500 fill-mode-both">
               <Link href="/register">
