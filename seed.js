@@ -125,9 +125,9 @@ async function seed() {
     const nextjsCourse = createdCourses[0];
     
     const lessons = await Lesson.insertMany([
-      { courseId: nextjsCourse._id, title: 'Introduction to Next.js', type: 'video', contentUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', order: 1, duration: 15 },
-      { courseId: nextjsCourse._id, title: 'Routing and Pages', type: 'video', contentUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', order: 2, duration: 25 },
-      { courseId: nextjsCourse._id, title: 'Server vs Client Components', type: 'video', contentUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', order: 3, duration: 20 },
+      { courseId: nextjsCourse._id, title: 'Introduction to Next.js 14', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=wm5gMKuwSYk', order: 1, duration: 15 },
+      { courseId: nextjsCourse._id, title: 'Routing and Pages', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=Zv1v1y-yvL8', order: 2, duration: 25 },
+      { courseId: nextjsCourse._id, title: 'Server vs Client Components', type: 'video', contentUrl: 'https://www.youtube.com/watch?v=p1kR-rXy1pE', order: 3, duration: 20 },
     ]);
 
     const quiz = await Quiz.create({
