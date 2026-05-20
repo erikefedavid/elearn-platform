@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import ReactPlayer from 'react-player';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ReactPlayer with SSR disabled to prevent hydration errors
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 interface VideoPlayerProps {
   url: string;
@@ -11,7 +14,7 @@ interface VideoPlayerProps {
 
 export default function VideoPlayer({ url, title, lessonId }: VideoPlayerProps) {
   const [mounted, setMounted] = useState(false);
-  const playerRef = useRef<ReactPlayer>(null);
+  const playerRef = useRef<any>(null);
   
   useEffect(() => {
     setMounted(true);
